@@ -3,6 +3,7 @@ import { sql } from "@/lib/db";
 import { verifyQrToken } from "@/lib/qrToken";
 import { markAttendanceSchema } from "@/lib/validation";
 import { distanceMeters } from "@/lib/geofence";
+import { getMarkedStudentId, setMarkedCookie } from "@/lib/deviceGuard";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { error: "This QR code has expired. Ask your instructor for a fresh scan." },
       { status: 410 }
+    );
+  }
+
+  const alreadyMarkedId = await getMarkedStudentId(verified.sessionId);
+  if (alreadyMarkedId && alreadyMarkedId !== studentId) {
+    return NextResponse.json(
+      {
+        error:
+          "This device has already been used to mark someone present for this session. Each phone can only mark its own owner present.",
+      },
+      { status: 403 }
     );
   }
 
@@ -86,6 +98,8 @@ export async function POST(req: NextRequest) {
     insert into attendance (session_id, student_id, latitude, longitude, distance_meters)
     values (${session.id}, ${studentId}, ${latitude}, ${longitude}, ${distance})
   `;
+
+  await setMarkedCookie(session.id, studentId, new Date(session.endsAt));
 
   return NextResponse.json({ ok: true, distanceMeters: Math.round(distance) });
 }

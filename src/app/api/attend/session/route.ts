@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { verifyQrToken } from "@/lib/qrToken";
+import { getMarkedStudentId } from "@/lib/deviceGuard";
 
 export const dynamic = "force-dynamic";
 
@@ -50,9 +51,15 @@ export async function GET(req: NextRequest) {
     order by name asc
   `;
 
+  const markedId = await getMarkedStudentId(session.id);
+  const alreadyMarked = markedId
+    ? students.find((s) => s.id === markedId) ?? null
+    : null;
+
   return NextResponse.json({
     sessionTitle: session.title,
     className: session.className,
     students,
+    alreadyMarked,
   });
 }
