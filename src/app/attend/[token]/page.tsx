@@ -8,7 +8,13 @@ type Student = { id: string; name: string; rollNumber: string };
 type LoadState =
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "ready"; sessionTitle: string; className: string; students: Student[] };
+  | {
+      status: "ready";
+      sessionTitle: string;
+      className: string;
+      students: Student[];
+      alreadyMarked: Student | null;
+    };
 
 type SubmitState =
   | { status: "idle" }
@@ -43,6 +49,7 @@ export default function AttendPage() {
         sessionTitle: data.sessionTitle,
         className: data.className,
         students: data.students,
+        alreadyMarked: data.alreadyMarked ?? null,
       });
     }
     run();
@@ -117,7 +124,18 @@ export default function AttendPage() {
             <h1 className="font-display text-xl text-ink">{load.sessionTitle}</h1>
             <p className="mt-1 text-sm text-ink-500">{load.className}</p>
 
-            {!selected ? (
+            {load.alreadyMarked ? (
+              <div className="mt-6 rounded border border-present-bg bg-present-bg px-4 py-6 text-center">
+                <p className="font-display text-lg text-present">
+                  This phone already marked {load.alreadyMarked.name} present
+                </p>
+                <p className="mt-2 text-sm text-ink-500">
+                  Each phone can only be used to mark its own owner present for
+                  a session. If this isn't your name, ask your instructor for
+                  help.
+                </p>
+              </div>
+            ) : !selected ? (
               <div className="mt-6">
                 <label className="text-sm font-medium text-ink-600">Find your name</label>
                 <input
