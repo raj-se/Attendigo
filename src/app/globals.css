@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: #F6F3EC;
+  color: #171B26;
+}
+
+::selection {
+  background-color: #F5C344;
+  color: #171B26;
+}
+
+*:focus-visible {
+  outline: 2px solid #171B26;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.rule {
+  border-color: #C4C8D2;
+}
+
+@layer components {
+  .input {
+    @apply w-full rounded border border-ink-200 bg-white px-3 py-2 text-sm text-ink placeholder:text-ink-300 focus:border-ink-500;
+  }
+  .btn-primary {
+    @apply rounded bg-ink px-4 py-2 text-sm font-medium text-paper hover:bg-ink-700 disabled:opacity-60;
+  }
+  .btn-secondary {
+    @apply rounded border border-ink-200 px-4 py-2 text-sm font-medium text-ink hover:border-ink-500 disabled:opacity-60;
+  }
+}
