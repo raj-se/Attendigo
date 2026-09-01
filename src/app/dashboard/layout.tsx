@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getInstructorIdFromCookies } from "@/lib/auth";
 import { sql } from "@/lib/db";
+import { ADMIN_EMAIL } from "@/lib/admin";
 import SignOutButton from "./sign-out-button";
 
 export default async function DashboardLayout({
@@ -12,8 +13,9 @@ export default async function DashboardLayout({
   const instructorId = await getInstructorIdFromCookies();
   if (!instructorId) redirect("/login");
 
-  const rows = await sql`select name from instructors where id = ${instructorId}`;
+  const rows = await sql`select name, email from instructors where id = ${instructorId}`;
   const instructorName = rows[0]?.name ?? "";
+  const isAdmin = rows[0]?.email === ADMIN_EMAIL;
 
   return (
     <div className="min-h-screen bg-paper">
@@ -22,7 +24,12 @@ export default async function DashboardLayout({
           <Link href="/dashboard" className="font-display text-lg font-semibold text-ink">
             Rollcall
           </Link>
-          <div className="flex items-center gap-4 text-sm text-ink-500">
+          <div className="flex items-center gap-6 text-sm text-ink-500">
+            {isAdmin && (
+              <Link href="/dashboard/create-user" className="hover:text-ink">
+                Create user
+              </Link>
+            )}
             <span>{instructorName}</span>
             <SignOutButton />
           </div>
