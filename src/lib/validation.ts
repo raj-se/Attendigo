@@ -36,3 +36,12 @@ export const markAttendanceSchema = z.object({
   longitude: z.number().min(-180).max(180),
   accuracy: z.number().min(0).max(100000).optional(),
 });
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().toLowerCase().email("Enter a valid email"),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1),
+  password: z.string().min(8, "Use at least 8 characters"),
+});
