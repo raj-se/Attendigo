@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RequestAccessModal from "./request-access-modal";
 
 export default function HomePage() {
   return (
@@ -10,12 +11,6 @@ export default function HomePage() {
         <nav className="flex items-center gap-6 text-sm text-ink-500">
           <Link href="/login" className="hover:text-ink">
             Sign in
-          </Link>
-          <Link
-            href="/signup"
-            className="rounded bg-ink px-4 py-2 text-paper hover:bg-ink-700"
-          >
-            Create account
           </Link>
         </nav>
       </header>
@@ -32,12 +27,7 @@ export default function HomePage() {
             present — no roster to pass around, no logins to remember.
           </p>
           <div className="mt-8 flex items-center gap-4">
-            <Link
-              href="/signup"
-              className="rounded bg-ink px-5 py-3 text-sm font-medium text-paper hover:bg-ink-700"
-            >
-              Start taking attendance
-            </Link>
+            <RequestAccessModal />
             <Link
               href="/login"
               className="text-sm font-medium text-ink underline decoration-ink-200 underline-offset-4 hover:decoration-ink"
