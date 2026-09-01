@@ -61,7 +61,6 @@ export default function LoginPage() {
               autoComplete="current-password"
             />
           </label>
-
           <p className="text-right text-sm">
             <Link href="/forgot-password" className="text-ink-500 underline underline-offset-4">
               Forgot password?
@@ -78,13 +77,6 @@ export default function LoginPage() {
             {submitting ? "Signing in…" : "Sign in"}
           </button>
         </form>
-
-        <p className="mt-6 text-sm text-ink-500">
-          New here?{" "}
-          <Link href="/signup" className="text-ink underline underline-offset-4">
-            Create an account
-          </Link>
-        </p>
       </div>
     </main>
   );
