@@ -1,11 +1,5 @@
 import { z } from "zod";
 
-export const signupSchema = z.object({
-  name: z.string().trim().min(1, "Enter your name").max(120),
-  email: z.string().trim().toLowerCase().email("Enter a valid email"),
-  password: z.string().min(8, "Use at least 8 characters"),
-});
-
 export const loginSchema = z.object({
   email: z.string().trim().toLowerCase().email("Enter a valid email"),
   password: z.string().min(1, "Enter your password"),
@@ -44,4 +38,15 @@ export const forgotPasswordSchema = z.object({
 export const resetPasswordSchema = z.object({
   token: z.string().min(1),
   password: z.string().min(8, "Use at least 8 characters"),
+});
+
+export const accessRequestSchema = z.object({
+  name: z.string().trim().min(1, "Enter your name").max(120),
+  email: z.string().trim().toLowerCase().email("Enter a valid email"),
+  message: z.string().trim().max(1000).optional(),
+});
+
+export const createInstructorSchema = z.object({
+  name: z.string().trim().min(1, "Enter a name").max(120),
+  email: z.string().trim().toLowerCase().email("Enter a valid email"),
 });
