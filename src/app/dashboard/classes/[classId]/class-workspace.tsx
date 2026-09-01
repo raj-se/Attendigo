@@ -92,24 +92,37 @@ function RosterTab({
   const [bulkText, setBulkText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [fileName, setFileName] = useState<string | null>(null);
 
-  async function handleAdd(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    const rows = bulkText
-      .split("\n")
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .map((line) => {
-        const [name, rollNumber] = line.split(",").map((s) => s?.trim());
-        return { name, rollNumber };
-      });
+  function parseRows(lines: string[]) {
+    const cleaned = lines.map((line) => line.trim()).filter(Boolean);
 
+    // If the first line looks like a header ("Name, Roll Number" etc,
+    // as most spreadsheet exports include), drop it.
+    if (cleaned.length > 0) {
+      const first = cleaned[0].toLowerCase();
+      if (first.includes("name") && (first.includes("roll") || first.includes("id"))) {
+        cleaned.shift();
+      }
+    }
+
+    return cleaned.map((line) => {
+      const [name, rollNumber] = line.split(",").map((s) => s?.trim().replace(/^"|"$/g, ""));
+      return { name, rollNumber };
+    });
+  }
+
+  async function submitRows(rows: { name?: string; rollNumber?: string }[]) {
+    if (rows.length === 0) {
+      setError("Didn't find any rows to add.");
+      return;
+    }
     if (rows.some((r) => !r.name || !r.rollNumber)) {
-      setError('Each line should look like: "Full Name, Roll Number"');
+      setError('Each row should have a name and a roll number, e.g. "Full Name, Roll Number"');
       return;
     }
 
+    setError(null);
     setSubmitting(true);
     const res = await fetch(`/api/classes/${classId}/students`, {
       method: "POST",
@@ -128,7 +141,24 @@ function RosterTab({
       return Array.from(byId.values()).sort((a, b) => a.name.localeCompare(b.name));
     });
     setBulkText("");
+    setFileName(null);
     onChanged();
+  }
+
+  async function handlePasteSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const rows = parseRows(bulkText.split("\n"));
+    await submitRows(rows);
+  }
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-selecting the same file later
+    if (!file) return;
+    setFileName(file.name);
+    const text = await file.text();
+    const rows = parseRows(text.split(/\r\n|\n/));
+    await submitRows(rows);
   }
 
   async function handleRemove(studentId: string) {
@@ -141,25 +171,46 @@ function RosterTab({
 
   return (
     <div className="grid gap-8 md:grid-cols-2">
-      <form onSubmit={handleAdd}>
-        <label className="block text-sm font-medium text-ink-600">
-          Add students
-        </label>
-        <p className="mt-1 text-xs text-ink-400">
-          One per line: Full Name, Roll Number
+      <div>
+        <form onSubmit={handlePasteSubmit}>
+          <label className="block text-sm font-medium text-ink-600">
+            Add students
+          </label>
+          <p className="mt-1 text-xs text-ink-400">
+            One per line: Full Name, Roll Number
+          </p>
+          <textarea
+            value={bulkText}
+            onChange={(e) => setBulkText(e.target.value)}
+            rows={8}
+            placeholder={"Asha Rao, 21IT045\nVikram Shah, 21IT046"}
+            className="input mt-2 font-mono text-xs"
+          />
+          <button type="submit" disabled={submitting} className="btn-primary mt-3">
+            {submitting ? "Adding…" : "Add to roster"}
+          </button>
+        </form>
+
+        <div className="mt-5 flex items-center gap-3 border-t border-ink-100 pt-5">
+          <label className="btn-secondary cursor-pointer">
+            Upload CSV instead
+            <input
+              type="file"
+              accept=".csv,text/csv"
+              onChange={handleFileChange}
+              disabled={submitting}
+              className="hidden"
+            />
+          </label>
+          {fileName && <span className="text-xs text-ink-400">{fileName}</span>}
+        </div>
+        <p className="mt-2 text-xs text-ink-400">
+          Two columns, name first: <span className="font-mono">Name,RollNumber</span>.
+          A header row is fine — it's detected and skipped automatically.
         </p>
-        <textarea
-          value={bulkText}
-          onChange={(e) => setBulkText(e.target.value)}
-          rows={8}
-          placeholder={"Asha Rao, 21IT045\nVikram Shah, 21IT046"}
-          className="input mt-2 font-mono text-xs"
-        />
+
         {error && <p className="mt-2 text-xs text-absent">{error}</p>}
-        <button type="submit" disabled={submitting} className="btn-primary mt-3">
-          {submitting ? "Adding…" : "Add to roster"}
-        </button>
-      </form>
+      </div>
 
       <div>
         <p className="text-sm font-medium text-ink-600">Current roster</p>
